@@ -1,5 +1,3 @@
-FORMAT: 1A
-
 # Netki Wallet Name Resolver
 
 This Wallet Name resolver library allows you go resolve a Wallet Name using DNS + DNSSEC. Additionally, the library has 
