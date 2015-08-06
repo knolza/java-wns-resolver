@@ -76,7 +76,7 @@ public class WalletNameResolver {
      * @param currency 3 Letter Code to Denote the Requested Currency (i.e., "btc", "ltc", "dgc")
      * @param validateTLSA Boolean to require TLSA validation for an URL Endpoints
      * @return Raw Cryptocurrency Address or Bitcoin URI (BIP21/BIP72)
-     * @throws WalletNameLookupException
+     * @throws WalletNameLookupException Wallet Name Lookup Failure including message
      */
     public String resolve(String label, String currency, boolean validateTLSA) throws WalletNameLookupException {
 
@@ -95,7 +95,7 @@ public class WalletNameResolver {
             throw new WalletNameLookupException(e.getMessage());
         }
 
-        ArrayList<String> currencies = new ArrayList<>(Arrays.asList(availableCurrencies.split(" ")));
+        ArrayList<String> currencies = new ArrayList<String>(Arrays.asList(availableCurrencies.split(" ")));
         if (!currencies.contains(currency)) {
             throw new WalletNameLookupException("Currency Not Available");
         }
@@ -126,7 +126,7 @@ public class WalletNameResolver {
      * @param url Wallet Name URL Endpoint
      * @param verifyTLSA Do TLSA validation for URL Endpoint?
      * @return String data value returned by URL Endpoint
-     * @throws WalletNameLookupException
+     * @throws WalletNameLookupException Wallet Name Address Service URL Processing Failure
      */
     public String processWalletNameUrl(URL url, boolean verifyTLSA) throws WalletNameLookupException {
 
@@ -183,7 +183,9 @@ public class WalletNameResolver {
             dnssecResolver = new DNSSECResolver(new DNSBootstrapService());
             caCertService = CACertService.getInstance();
             chainValidator = new CertChainValidator();
-        } catch (UnknownHostException | KeyStoreException e) {
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
             e.printStackTrace();
         }
 

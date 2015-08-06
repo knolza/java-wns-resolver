@@ -33,8 +33,8 @@ public class WalletNameResolverTest {
 
         try {
             when(this.testObj.resolve(anyString(), anyString(), anyBoolean())).thenCallRealMethod();
-            when(this.testObj.setDNSSECResolver(any())).thenCallRealMethod();
-            when(this.testObj.setTlsaValidator(any())).thenCallRealMethod();
+            when(this.testObj.setDNSSECResolver(any(DNSSECResolver.class))).thenCallRealMethod();
+            when(this.testObj.setTlsaValidator(any(TLSAValidator.class))).thenCallRealMethod();
             this.testObj.setDNSSECResolver(this.mockResolver);
             this.testObj.setTlsaValidator(this.mockTlsaValidator);
         } catch (WalletNameLookupException e) {

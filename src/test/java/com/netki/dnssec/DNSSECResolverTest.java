@@ -13,6 +13,7 @@ import static org.mockito.Mockito.*;
 import org.xbill.DNS.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -53,7 +54,7 @@ public class DNSSECResolverTest {
 
         // Setup Mocks
         try {
-            List<InetAddress> addrList = new ArrayList<>();
+            List<InetAddress> addrList = new ArrayList<InetAddress>();
             addrList.add(InetAddress.getByName("8.8.8.8"));
 
             when(this.mockDNSBootstrapService.getSystemDNSServers()).thenReturn(addrList);
@@ -85,7 +86,7 @@ public class DNSSECResolverTest {
             assertEquals("Text Record Value is Incorrect", "\\textresult\\", result);
 
             // Verify Calls
-            verify(this.mockValidatingResolver).loadTrustAnchors(any());
+            verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
             verify(this.mockValidatingResolver, times(1)).send(any(Message.class));
             verify(this.responseMessage, atLeastOnce()).getHeader();
             verify(this.spyHeader).getFlag(Flags.AD);
@@ -102,7 +103,7 @@ public class DNSSECResolverTest {
     public void resolveTrustAnchorUnknownHostException() {
 
         try {
-            doThrow(new UnknownHostException()).when(this.mockValidatingResolver).loadTrustAnchors(any());
+            doThrow(new UnknownHostException()).when(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -116,7 +117,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("Unknown DNS Host: 8.8.8.8", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(0)).send(any(Message.class));
                 } catch (IOException e1) {
                     e1.printStackTrace();
@@ -129,7 +130,7 @@ public class DNSSECResolverTest {
     public void resolveTrustAnchorUnsupportedEncodingException() {
 
         try {
-            doThrow(new UnsupportedEncodingException()).when(this.mockValidatingResolver).loadTrustAnchors(any());
+            doThrow(new UnsupportedEncodingException()).when(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -143,7 +144,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("Unsupported Trust Anchor Encoding", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(0)).send(any(Message.class));
                 } catch (IOException e1) {
                     e1.printStackTrace();
@@ -156,7 +157,7 @@ public class DNSSECResolverTest {
     public void resolveTrustAnchorIOException() {
 
         try {
-            doThrow(new IOException("Error Message")).when(this.mockValidatingResolver).loadTrustAnchors(any());
+            doThrow(new IOException("Error Message")).when(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -170,7 +171,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("Resolver Creation Exception: Error Message", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(0)).send(any(Message.class));
                 } catch (IOException e1) {
                     e1.printStackTrace();
@@ -184,7 +185,7 @@ public class DNSSECResolverTest {
 
         this.spyHeader.unsetFlag(Flags.AD);
         this.responseMessage.removeAllRecords(Section.ANSWER);
-        List<String> failList = new ArrayList<>();
+        List<String> failList = new ArrayList<String>();
         failList.add("Failure Error 1");
         Record failRecord = new TXTRecord(Name.root, ValidatingResolver.VALIDATION_REASON_QCLASS, 800, failList);
         this.responseMessage.addRecord(failRecord, Section.ADDITIONAL);
@@ -199,7 +200,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("Failure Error 1", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(1)).send(any(Message.class));
                     verify(this.spyHeader).getFlag(Flags.AD);
                     verify(this.responseMessage, times(0)).getSectionRRsets(Section.ANSWER);
@@ -215,7 +216,7 @@ public class DNSSECResolverTest {
 
         this.responseMessage.getHeader().setRcode(Rcode.SERVFAIL);
         this.responseMessage.removeAllRecords(Section.ANSWER);
-        List<String> failList = new ArrayList<>();
+        List<String> failList = new ArrayList<String>();
         failList.add("Failure Error 1");
         Record failRecord = new TXTRecord(Name.root, ValidatingResolver.VALIDATION_REASON_QCLASS, 800, failList);
         this.responseMessage.addRecord(failRecord, Section.ADDITIONAL);
@@ -230,7 +231,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("Failure Error 1", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(1)).send(any(Message.class));
                     verify(this.spyHeader).getFlag(Flags.AD);
                     verify(this.responseMessage, times(1)).getRcode();
@@ -246,7 +247,7 @@ public class DNSSECResolverTest {
     public void resolveNoAnswerReceived() {
 
         this.responseMessage.removeAllRecords(Section.ANSWER);
-        List<String> failList = new ArrayList<>();
+        List<String> failList = new ArrayList<String>();
         failList.add("Failure Error 1");
         Record failRecord = new TXTRecord(Name.root, ValidatingResolver.VALIDATION_REASON_QCLASS, 800, failList);
         this.responseMessage.addRecord(failRecord, Section.ADDITIONAL);
@@ -260,7 +261,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("No Query Answer Received", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(1)).send(any(Message.class));
                     verify(this.spyHeader).getFlag(Flags.AD);
                     verify(this.responseMessage, times(1)).getRcode();
@@ -276,7 +277,7 @@ public class DNSSECResolverTest {
     public void resolveQueryIOError() {
 
         try {
-            doThrow(new IOException("IO Failure")).when(this.mockValidatingResolver).send(any());
+            doThrow(new IOException("IO Failure")).when(this.mockValidatingResolver).send(any(Message.class));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -290,7 +291,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("DNSSEC Lookup Failure: IO Failure", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(1)).send(any(Message.class));
                     verify(this.spyHeader, times(0)).getFlag(Flags.AD);
                     verify(this.responseMessage, times(0)).getRcode();
@@ -318,7 +319,7 @@ public class DNSSECResolverTest {
                 assertTrue(true);
                 assertEquals("Unknown DNSSEC Lookup Failure", e.getMessage());
                 try {
-                    verify(this.mockValidatingResolver).loadTrustAnchors(any());
+                    verify(this.mockValidatingResolver).loadTrustAnchors(any(InputStream.class));
                     verify(this.mockValidatingResolver, times(1)).send(any(Message.class));
                     verify(this.spyHeader, times(1)).getFlag(Flags.AD);
                     verify(this.responseMessage, times(0)).getRcode();

@@ -205,7 +205,7 @@ public class TLSAValidator {
             socket.startHandshake();
             SSLSession session = socket.getSession();
             Certificate[] certArray = session.getPeerCertificates();
-            return new ArrayList<>(Arrays.asList(certArray));
+            return new ArrayList<Certificate>(Arrays.asList(certArray));
 
         } catch (Exception e){
             e.printStackTrace();
@@ -217,7 +217,7 @@ public class TLSAValidator {
             }
         }
 
-        return new ArrayList<>();
+        return new ArrayList<Certificate>();
     }
 
     /**
@@ -270,7 +270,9 @@ public class TLSAValidator {
             dnssecResolver = new DNSSECResolver(new DNSBootstrapService());
             caCertService = CACertService.getInstance();
             chainValidator = new CertChainValidator();
-        } catch (KeyStoreException | UnknownHostException e) {
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
             e.printStackTrace();
         }
 

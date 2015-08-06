@@ -32,17 +32,16 @@ public class CACertService {
             caCertKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             caCertKeystore.load(is, "changeit".toCharArray());
 
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+        } catch (Exception e) {
             throw new KeyStoreException("Unable to Create CA Cert KeyStore: " + e.getMessage());
         }
-
     }
 
     /**
      * Get Instance of CACertService singleton
      *
      * @return Instance of CACertService
-     * @throws KeyStoreException
+     * @throws KeyStoreException Thrown if new CACertService object creation fails
      */
     public static CACertService getInstance() throws KeyStoreException {
         if(ourInstance == null) {

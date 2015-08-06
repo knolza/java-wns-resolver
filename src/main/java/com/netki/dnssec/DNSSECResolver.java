@@ -26,7 +26,7 @@ public class DNSSECResolver {
      * DNSSECResolver Constructor
      *
      * @param dnsBootstrapService DNSBootstrapService to provide DNS servers for lookups
-     * @throws UnknownHostException
+     * @throws UnknownHostException Thrown if system DNS servers are not available or invalid
      */
     public DNSSECResolver(DNSBootstrapService dnsBootstrapService) throws UnknownHostException {
         this.dnsServers = dnsBootstrapService.getSystemDNSServers();
@@ -57,7 +57,7 @@ public class DNSSECResolver {
      * @param label - DNS label to resolve using DNSSEC
      * @param type - Integer of DNS RR Type (org.xbill.DNS.Type)
      * @return Resulting value string
-     * @throws DNSSECException
+     * @throws DNSSECException Exception thrown with appropriate message to determine the problem that occurred
      */
     public String resolve(String label, int type) throws DNSSECException {
 

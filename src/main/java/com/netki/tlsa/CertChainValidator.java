@@ -17,11 +17,11 @@ public class CertChainValidator {
      * @param client   is the client X509Certificate
      * @param keyStore containing all trusted certificate
      * @return true if validation until root certificate success, false otherwise
-     * @throws KeyStoreException
-     * @throws CertificateException
-     * @throws InvalidAlgorithmParameterException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
+     * @throws KeyStoreException KeyStore is invalid
+     * @throws CertificateException Certificate is Invalid
+     * @throws InvalidAlgorithmParameterException Algorithm Parameter is Invalid
+     * @throws NoSuchAlgorithmException Algorithm Does Not Exist
+     * @throws NoSuchProviderException No Such Security Provider Exists
      */
 
     public boolean validateKeyChain(X509Certificate client, KeyStore keyStore) throws KeyStoreException, CertificateException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
@@ -45,10 +45,10 @@ public class CertChainValidator {
      * @param client       is the client X509Certificate
      * @param trustedCerts is Array containing all trusted X509Certificate
      * @return true if validation until root certificate success, false otherwise
-     * @throws CertificateException
-     * @throws InvalidAlgorithmParameterException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
+     * @throws CertificateException Certificate is invalid
+     * @throws InvalidAlgorithmParameterException Algorithm parameter is invalid
+     * @throws NoSuchAlgorithmException No Such Algorithm Exists
+     * @throws NoSuchProviderException No Such Security Provider Exists
      */
 
     public boolean validateKeyChain(X509Certificate client, X509Certificate... trustedCerts) throws CertificateException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
@@ -101,9 +101,9 @@ public class CertChainValidator {
     /**
      * @param cert is X509Certificate that will be tested
      * @return true if cert is self signed, false otherwise
-     * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
+     * @throws CertificateException Certificate is Invalid
+     * @throws NoSuchAlgorithmException Algorithm is Invalid
+     * @throws NoSuchProviderException No Such Security Provider Exists
      */
     public boolean isSelfSigned(X509Certificate cert) throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException {
 

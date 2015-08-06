@@ -54,7 +54,7 @@ public class TLSAValidatorTest {
         this.chainValidator = mock(CertChainValidator.class);
 
         // Add Certs to certs List
-        certs = new ArrayList<>();
+        certs = new ArrayList<Certificate>();
         certs.add(new X509CertImpl());
         certs.add(new X509CertImpl());
         certs.add(new X509CertImpl());
@@ -482,7 +482,7 @@ public class TLSAValidatorTest {
 
         TLSAValidator testObj = mock(TLSAValidator.class);
         when(testObj.getTLSARecord(any(URL.class))).thenReturn(this.testRecord);
-        when(testObj.getUrlCerts(any(URL.class))).thenReturn(new ArrayList<>());
+        when(testObj.getUrlCerts(any(URL.class))).thenReturn(new ArrayList<Certificate>());
         when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
 
         try {
@@ -541,7 +541,7 @@ public class TLSAValidatorTest {
         KeyStore testKeyStore = null;
 
         // Setup Arg Certs
-        List<Certificate> certList = new ArrayList<>();
+        List<Certificate> certList = new ArrayList<Certificate>();
         Certificate certList1;
         Certificate certList2;
         try {
@@ -600,7 +600,7 @@ public class TLSAValidatorTest {
     @Test
     public void getMatchingCert_FullCert() {
 
-        List<Certificate> certificateList = new ArrayList<>();
+        List<Certificate> certificateList = new ArrayList<Certificate>();
 
         // Setup Test
         try {
@@ -619,7 +619,7 @@ public class TLSAValidatorTest {
     @Test
     public void getMatchingCert_PubKey() {
 
-        List<Certificate> certificateList = new ArrayList<>();
+        List<Certificate> certificateList = new ArrayList<Certificate>();
 
         // Setup Test
         try {
@@ -638,7 +638,7 @@ public class TLSAValidatorTest {
     @Test
     public void getMatchingCert_SHA256() {
 
-        List<Certificate> certificateList = new ArrayList<>();
+        List<Certificate> certificateList = new ArrayList<Certificate>();
 
         // Setup Test
         try {
@@ -657,7 +657,7 @@ public class TLSAValidatorTest {
     @Test
     public void getMatchingCert_SHA512() {
 
-        List<Certificate> certificateList = new ArrayList<>();
+        List<Certificate> certificateList = new ArrayList<Certificate>();
 
         // Setup Test
         try {
@@ -676,7 +676,7 @@ public class TLSAValidatorTest {
     @Test
     public void getMatchingCert_NoMatch() {
 
-        List<Certificate> certificateList = new ArrayList<>();
+        List<Certificate> certificateList = new ArrayList<Certificate>();
 
         // Setup Test
         try {

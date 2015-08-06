@@ -11,7 +11,7 @@ public class DNSBootstrapServiceTest {
 
     @Test
     public void singleDnsServer() {
-        Hashtable<String, String> env = new Hashtable<>();
+        Hashtable<String, String> env = new Hashtable<String, String>();
         env.put("java.naming.provider.url", "dns://8.8.8.8");
         DNSBootstrapService testService = new DNSBootstrapService(env);
 
@@ -23,7 +23,7 @@ public class DNSBootstrapServiceTest {
 
     @Test
     public void multipleDnsServers() {
-        Hashtable<String, String> env = new Hashtable<>();
+        Hashtable<String, String> env = new Hashtable<String, String>();
         env.put("java.naming.provider.url", "dns://8.8.8.8 dns://8.8.4.4");
         DNSBootstrapService testService = new DNSBootstrapService(env);
 
@@ -36,7 +36,7 @@ public class DNSBootstrapServiceTest {
 
     @Test
     public void noDnsServers() {
-        Hashtable<String, String> env = new Hashtable<>();
+        Hashtable<String, String> env = new Hashtable<String, String>();
         env.put("java.naming.provider.url", "");
         DNSBootstrapService testService = new DNSBootstrapService(env);
 

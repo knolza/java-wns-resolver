@@ -41,7 +41,7 @@ public class DNSBootstrapService {
      */
     public List<InetAddress> getSystemDNSServers() {
 
-        List<InetAddress> dnsServers = new ArrayList<>();
+        List<InetAddress> dnsServers = new ArrayList<InetAddress>();
 
         try {
             String dnsProviderString = (String) this.env.get("java.naming.provider.url");
