@@ -8,6 +8,9 @@ import com.netki.exceptions.WalletNameLookupException;
 import com.netki.tlsa.CACertService;
 import com.netki.tlsa.CertChainValidator;
 import com.netki.tlsa.TLSAValidator;
+import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.uri.BitcoinURI;
+import org.bitcoinj.uri.BitcoinURIParseException;
 import org.xbill.DNS.*;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -17,18 +20,21 @@ import java.net.*;
 import java.security.KeyStoreException;
 import java.util.*;
 
-public class WalletNameResolver {
+/**
+ * WalletNameResolver objects are both re-usable and thread-safe.
+ */
 
-    private DNSSECResolver resolver;
-    private TLSAValidator tlsaValidator;
+public class WalletNameResolver {
 
     private static final long serialVersionUID = 1286676782550316507L;
     static String ROOT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
+    private DNSSECResolver resolver;
+    private TLSAValidator tlsaValidator;
 
     /**
      * Setup a new WalletNameResolver with default DNSSECResolver and TLSAValidator
      */
-    WalletNameResolver() {
+    public WalletNameResolver() {
         try {
             this.resolver = new DNSSECResolver(new DNSBootstrapService());
             this.tlsaValidator = new TLSAValidator();
@@ -39,12 +45,40 @@ public class WalletNameResolver {
 
     /**
      * Setup a new WalletNameResolver
+     *
      * @param dnssecResolver DNSSECResolver to use for DNSSEC name resolution
-     * @param tlsaValidator TLSAValidator to use for URL Endpoint TLSA Validation
+     * @param tlsaValidator  TLSAValidator to use for URL Endpoint TLSA Validation
      */
-    WalletNameResolver(DNSSECResolver dnssecResolver, TLSAValidator tlsaValidator) {
+    public WalletNameResolver(DNSSECResolver dnssecResolver, TLSAValidator tlsaValidator) {
         this.resolver = dnssecResolver;
         this.tlsaValidator = tlsaValidator;
+    }
+
+    public static void main(String[] args) {
+
+        DNSSECResolver dnssecResolver = null;
+        CACertService caCertService = null;
+        CertChainValidator chainValidator = null;
+
+        try {
+            dnssecResolver = new DNSSECResolver(new DNSBootstrapService());
+            caCertService = CACertService.getInstance();
+            chainValidator = new CertChainValidator();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+
+        WalletNameResolver resolver = new WalletNameResolver(dnssecResolver, new TLSAValidator(dnssecResolver, caCertService, chainValidator));
+        try {
+            BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
+            //String resolved = resolver.processWalletNameUrl(new URL("https://good.dane.verisignlabs.com"), true);
+            System.out.println(String.format("WalletNameResolver: %s", resolved));
+        } catch (WalletNameLookupException e) {
+            System.out.println("WalletNameResolverException Caught!");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -71,17 +105,23 @@ public class WalletNameResolver {
 
     /**
      * Resolve a Wallet Name
+     * <p/>
+     * This method is thread safe as it does not depend on any externally mutable variables.
      *
-     * @param label DNS Name (i.e., wallet.mattdavid.xyz)
-     * @param currency 3 Letter Code to Denote the Requested Currency (i.e., "btc", "ltc", "dgc")
+     * @param label        DNS Name (i.e., wallet.mattdavid.xyz)
+     * @param currency     3 Letter Code to Denote the Requested Currency (i.e., "btc", "ltc", "dgc")
      * @param validateTLSA Boolean to require TLSA validation for an URL Endpoints
      * @return Raw Cryptocurrency Address or Bitcoin URI (BIP21/BIP72)
      * @throws WalletNameLookupException Wallet Name Lookup Failure including message
      */
-    public String resolve(String label, String currency, boolean validateTLSA) throws WalletNameLookupException {
+    public BitcoinURI resolve(String label, String currency, boolean validateTLSA) throws WalletNameLookupException {
 
         label = label.toLowerCase();
         currency = currency.toLowerCase();
+
+        if (label.isEmpty()) {
+            throw new WalletNameLookupException("Wallet Name Label Must Non-Empty");
+        }
 
         String availableCurrencies;
         String resolved;
@@ -116,26 +156,33 @@ public class WalletNameResolver {
             return processWalletNameUrl(walletNameUrl, validateTLSA);
         } catch (MalformedURLException e) { /* This is not a URL */ }
 
-        return resolved;
-
+        try {
+            return new BitcoinURI(new MainNetParams(), resolved);
+        } catch (BitcoinURIParseException e) {
+            try {
+                return new BitcoinURI(new MainNetParams(), "bitcoin:" + resolved);
+            } catch (BitcoinURIParseException e1) {
+                throw new WalletNameLookupException("BitcoinURI Creation Failed for " + resolved + ": " + e1.getMessage());
+            }
+        }
     }
 
     /**
      * Resolve a Wallet Name URL Endpoint
      *
-     * @param url Wallet Name URL Endpoint
+     * @param url        Wallet Name URL Endpoint
      * @param verifyTLSA Do TLSA validation for URL Endpoint?
      * @return String data value returned by URL Endpoint
      * @throws WalletNameLookupException Wallet Name Address Service URL Processing Failure
      */
-    public String processWalletNameUrl(URL url, boolean verifyTLSA) throws WalletNameLookupException {
+    public BitcoinURI processWalletNameUrl(URL url, boolean verifyTLSA) throws WalletNameLookupException {
 
         HttpsURLConnection conn = null;
         InputStream ins;
         InputStreamReader isr;
         BufferedReader in = null;
 
-        if(verifyTLSA) {
+        if (verifyTLSA) {
             try {
                 if (!this.tlsaValidator.validateTLSA(url)) {
                     throw new WalletNameLookupException("TLSA Validation Failed");
@@ -157,12 +204,16 @@ public class WalletNameResolver {
                 data += inputLine;
             }
 
-            return data;
+            try {
+                return new BitcoinURI(new MainNetParams(), data);
+            } catch (BitcoinURIParseException e) {
+                throw new WalletNameLookupException("Unable to create BitcoinURI: " + e.getMessage());
+            }
         } catch (IOException e) {
             e.printStackTrace();
             throw new WalletNameLookupException("WalletName URL Connection Failed");
         } finally {
-            if(conn != null && in != null) {
+            if (conn != null && in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
@@ -170,33 +221,6 @@ public class WalletNameResolver {
                 }
                 conn.disconnect();
             }
-        }
-    }
-
-    public static void main(String[] args) {
-
-        DNSSECResolver dnssecResolver = null;
-        CACertService caCertService = null;
-        CertChainValidator chainValidator = null;
-
-        try {
-            dnssecResolver = new DNSSECResolver(new DNSBootstrapService());
-            caCertService = CACertService.getInstance();
-            chainValidator = new CertChainValidator();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        }
-
-        WalletNameResolver resolver = new WalletNameResolver(dnssecResolver, new TLSAValidator(dnssecResolver, caCertService, chainValidator));
-        try {
-            String resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
-            //String resolved = resolver.processWalletNameUrl(new URL("https://good.dane.verisignlabs.com"), true);
-            System.out.println(String.format("WalletNameResolver: %s", resolved));
-        } catch (WalletNameLookupException e) {
-            System.out.println("WalletNameResolverException Caught!");
-            e.printStackTrace();
         }
     }
 

@@ -18,6 +18,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * TLSAValidator objects are both re-usable and threadsafe.
+ */
+
 public class TLSAValidator {
 
     DNSSECResolver dnssecResolver;

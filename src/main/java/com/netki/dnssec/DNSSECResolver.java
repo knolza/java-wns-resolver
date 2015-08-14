@@ -14,6 +14,10 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * DNSSECResolver Objects are both re-usable and thread safe.
+ *
+ */
 public class DNSSECResolver {
 
     private List<InetAddress> dnsServers;
