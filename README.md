@@ -1,5 +1,7 @@
 # Netki Wallet Name Resolver
 
+![JitPack Badge](https://img.shields.io/github/tag/netkicorp/java-wns-resolver.svg?label=JitPack)
+
 This Wallet Name resolver library allows you go resolve a Wallet Name using DNS + DNSSEC. Additionally, the library has 
 built-in support for optional [TLSA Record](https://tools.ietf.org/html/rfc6698) validation for Address Service endpoints. 
 
