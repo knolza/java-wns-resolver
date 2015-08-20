@@ -1,12 +1,29 @@
 # Netki Wallet Name Resolver
 
 ![JitPack Badge](https://img.shields.io/github/tag/netkicorp/java-wns-resolver.svg?label=JitPack)
+![Maven Central](https://img.shields.io/maven-central/v/com.netki/wallet-name-resolver.svg)
+
 
 This Wallet Name resolver library allows you go resolve a Wallet Name using DNS + DNSSEC. Additionally, the library has 
 built-in support for optional [TLSA Record](https://tools.ietf.org/html/rfc6698) validation for Address Service endpoints. 
 
 This library relies on the [dnssecjava](https://github.com/ibauersachs/dnssecjava) project for DNSSEC validation of
 the Wallet Name resolution as well as [TLSA Record](https://tools.ietf.org/html/rfc6698) resolution.
+
+### Library Inclusion
+
+This library can be included directly from Maven Central / OSS Sonatype.
+
+##### Maven
+
+    <dependency>
+        <groupId>com.netki</groupId>
+        <artifactId>wallet-name-resolver</artifactId>
+    </dependency>
+    
+##### Gradle
+
+    'com.netki:wallet-name-resolver:0.0.2+'
 
 ### Example
 
