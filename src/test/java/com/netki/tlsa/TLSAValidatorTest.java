@@ -4,6 +4,7 @@ import com.netki.dnssec.DNSSECResolver;
 import com.netki.exceptions.DNSSECException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
@@ -21,12 +22,14 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.xbill.DNS.*;
-import sun.security.x509.X509CertImpl;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.RSAPrivateKeySpec;
 import java.util.*;
@@ -54,10 +57,14 @@ public class TLSAValidatorTest {
         this.chainValidator = mock(CertChainValidator.class);
 
         // Add Certs to certs List
-        certs = new ArrayList<Certificate>();
-        certs.add(new X509CertImpl());
-        certs.add(new X509CertImpl());
-        certs.add(new X509CertImpl());
+        try {
+            certs = new ArrayList<Certificate>();
+            certs.add(generateCertificate("CN=Test1, L=London, C=GB"));
+            certs.add(generateCertificate("CN=Test2, L=London, C=GB"));
+            certs.add(generateCertificate("CN=Test3, L=London, C=GB"));
+        } catch (Exception e) {
+            assertTrue("Exception Creating Test Certificates", false);
+        }
 
         try {
             certData = new BigInteger("1bf4bfb2bfbf1e8bfbf1bfbfbfa7274b", 16).toByteArray();
@@ -118,7 +125,11 @@ public class TLSAValidatorTest {
             KeyFactory factory = KeyFactory.getInstance("RSA");
 
             ContentSigner sigGen = new JcaContentSignerBuilder("SHA1withRSA").build(factory.generatePrivate(privateSpec));
-            return new X509CertImpl(builder.build(sigGen).getEncoded());
+
+            X509CertificateHolder holder = builder.build(sigGen);
+            InputStream is = new ByteArrayInputStream(holder.toASN1Structure().getEncoded());
+            return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(is);
+
         } catch (OperatorCreationException e) {
             e.printStackTrace();
         }
@@ -538,16 +549,17 @@ public class TLSAValidatorTest {
     public void isValidCertChain_GoRight() {
 
         // Setup Mock Keystore
-        KeyStore testKeyStore = null;
+        KeyStore testKeyStore;
 
         // Setup Arg Certs
         List<Certificate> certList = new ArrayList<Certificate>();
         Certificate certList1;
         Certificate certList2;
+        Certificate testCert;
         try {
 
             testKeyStore = spy(KeyStore.getInstance(KeyStore.getDefaultType()));
-            Certificate cert1 = new X509CertImpl();
+            Certificate cert1 = generateCertificate("CN=Test1, L=Los Angeles, C=US");
             testKeyStore.load(null);
             testKeyStore.setCertificateEntry("cert1", cert1);
 
@@ -555,12 +567,12 @@ public class TLSAValidatorTest {
             certList2 = generateCertificate("CN=Test2, L=Los Angeles, C=US");
             certList.add(certList1);
             certList.add(certList2);
+
+            testCert = generateCertificate("CN=TestCert, L=Los Angeles, C=US");
         } catch (Exception e) {
             fail("Test Setup Failure: " + e.getMessage());
+            return;
         }
-
-        // Test Cert
-        Certificate testCert = new X509CertImpl();
 
         try {
             PowerMockito.mockStatic(KeyStore.class);

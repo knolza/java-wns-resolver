@@ -73,7 +73,6 @@ public class WalletNameResolver {
         WalletNameResolver resolver = new WalletNameResolver(dnssecResolver, new TLSAValidator(dnssecResolver, caCertService, chainValidator));
         try {
             BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
-            //String resolved = resolver.processWalletNameUrl(new URL("https://good.dane.verisignlabs.com"), true);
             System.out.println(String.format("WalletNameResolver: %s", resolved));
         } catch (WalletNameLookupException e) {
             System.out.println("WalletNameResolverException Caught!");
