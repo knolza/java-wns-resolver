@@ -22,9 +22,9 @@ import static org.mockito.Mockito.*;
 @PrepareForTest(WalletNameResolver.class)
 public class WalletNameResolverTest {
 
-    DNSSECResolver mockResolver;
-    TLSAValidator mockTlsaValidator;
-    WalletNameResolver testObj;
+    private DNSSECResolver mockResolver;
+    private TLSAValidator mockTlsaValidator;
+    private WalletNameResolver testObj;
 
     @Before
     public void setUp() {
@@ -34,8 +34,8 @@ public class WalletNameResolverTest {
 
         try {
             when(this.testObj.resolve(anyString(), anyString(), anyBoolean())).thenCallRealMethod();
-            when(this.testObj.setDNSSECResolver(any(DNSSECResolver.class))).thenCallRealMethod();
-            when(this.testObj.setTlsaValidator(any(TLSAValidator.class))).thenCallRealMethod();
+            doCallRealMethod().when(this.testObj).setDNSSECResolver(any(DNSSECResolver.class));
+            doCallRealMethod().when(this.testObj).setTlsaValidator(any(TLSAValidator.class));
             this.testObj.setDNSSECResolver(this.mockResolver);
             this.testObj.setTlsaValidator(this.mockTlsaValidator);
         } catch (WalletNameLookupException e) {
@@ -60,6 +60,7 @@ public class WalletNameResolverTest {
 
         try {
             BitcoinURI result = this.testObj.resolve("wallet.domain.com", "btc", true);
+            assertNotNull(result.getAddress());
             assertEquals("1CpLXM15vjULK3ZPGUTDMUcGATGR9xGitv", result.getAddress().toString());
             verify(this.mockResolver, times(2)).resolve(anyString(), eq(Type.TXT));
             verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));
@@ -81,6 +82,7 @@ public class WalletNameResolverTest {
 
         try {
             BitcoinURI result = this.testObj.resolve("wallet.domain.com", "btc", true);
+            assertNotNull(result.getAddress());
             assertEquals("1CpLXM15vjULK3ZPGUTDMUcGATGR9xGitv", result.getAddress().toString());
             verify(this.mockResolver, times(2)).resolve(anyString(), eq(Type.TXT));
             verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));
@@ -273,6 +275,7 @@ public class WalletNameResolverTest {
 
         try {
             BitcoinURI result = this.testObj.resolve("wallet.domain.com", "btc", true);
+            assertNotNull(result.getAddress());
             assertEquals("1CpLXM15vjULK3ZPGUTDMUcGATGR9xGitv", result.getAddress().toString());
             verify(this.mockResolver, times(2)).resolve(anyString(), eq(Type.TXT));
             verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));

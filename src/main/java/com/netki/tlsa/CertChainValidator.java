@@ -51,7 +51,7 @@ public class CertChainValidator {
      * @throws NoSuchProviderException No Such Security Provider Exists
      */
 
-    public boolean validateKeyChain(X509Certificate client, X509Certificate... trustedCerts) throws CertificateException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    private boolean validateKeyChain(X509Certificate client, X509Certificate... trustedCerts) throws CertificateException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
 
         boolean found = false;
         int i = trustedCerts.length;
@@ -105,7 +105,7 @@ public class CertChainValidator {
      * @throws NoSuchAlgorithmException Algorithm is Invalid
      * @throws NoSuchProviderException No Such Security Provider Exists
      */
-    public boolean isSelfSigned(X509Certificate cert) throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException {
+    private boolean isSelfSigned(X509Certificate cert) throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException {
 
         try {
             PublicKey key = cert.getPublicKey();

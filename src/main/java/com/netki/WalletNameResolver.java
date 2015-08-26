@@ -26,8 +26,6 @@ import java.util.*;
 
 public class WalletNameResolver {
 
-    private static final long serialVersionUID = 1286676782550316507L;
-    static String ROOT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
     private DNSSECResolver resolver;
     private TLSAValidator tlsaValidator;
 
@@ -84,22 +82,18 @@ public class WalletNameResolver {
      * Set the WalletNameResolver's DNSSECResolver
      *
      * @param resolver DNSSECResolver to use for DNSSEC name resolution
-     * @return Always return true
      */
-    public boolean setDNSSECResolver(DNSSECResolver resolver) {
+    public void setDNSSECResolver(DNSSECResolver resolver) {
         this.resolver = resolver;
-        return true;
     }
 
     /**
      * Set the WalletNameResolver's TLSAValidator
      *
      * @param validator TLSAValidator to use for URL Endpoint TLSA Validation
-     * @return Always return true
      */
-    public boolean setTlsaValidator(TLSAValidator validator) {
+    public void setTlsaValidator(TLSAValidator validator) {
         this.tlsaValidator = validator;
-        return true;
     }
 
     /**

@@ -2,12 +2,9 @@ package com.netki.tlsa;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
@@ -19,7 +16,7 @@ public class CACertService {
     /**
      * Default Constructor for CACertService
      *
-     * Builds a CA Certificate KeyStore based on $JAVAHOME/lib/security/cacerts
+     * Builds a CA Certificate KeyStore based on $JAVA_HOME/lib/security/cacerts
      *
      * @throws KeyStoreException
      */

@@ -20,11 +20,11 @@ import java.util.List;
  */
 public class DNSSECResolver {
 
-    private List<InetAddress> dnsServers;
+    private final List<InetAddress> dnsServers;
     private SimpleResolver simpleResolver;
     private ValidatingResolver validatingResolver;
 
-    static String ROOT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
+    private static final String ROOT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
 
     /**
      * DNSSECResolver Constructor
@@ -82,8 +82,8 @@ public class DNSSECResolver {
 
             if (response.getHeader().getFlag(Flags.AD) && response.getRcode() == Rcode.NOERROR) {
                 for (RRset set : response.getSectionRRsets(Section.ANSWER)) {
-                    Iterator iter;
-                    for(iter = set.rrs(); iter.hasNext(); ) {
+                    Iterator<?> iter = set.rrs();
+                    while(iter.hasNext()) {
                         Record record = (Record)iter.next();
                         if (record.getType() == type) {
                             return record.rdataToString().replace("\"","");

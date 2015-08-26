@@ -24,9 +24,9 @@ import java.util.List;
 
 public class TLSAValidator {
 
-    DNSSECResolver dnssecResolver;
-    CACertService caCertService;
-    CertChainValidator chainValidator;
+    private DNSSECResolver dnssecResolver;
+    private CACertService caCertService;
+    private CertChainValidator chainValidator;
 
     /**
      * Default TLSAValidator constructor

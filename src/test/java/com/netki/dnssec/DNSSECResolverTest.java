@@ -22,13 +22,13 @@ import java.util.List;
 
 public class DNSSECResolverTest {
 
-    DNSBootstrapService mockDNSBootstrapService;
-    SimpleResolver mockSimpleResolver;
-    ValidatingResolver mockValidatingResolver;
-    DNSSECResolver testObj;
-    Message responseMessage;
-    Header spyHeader;
-    Record answerRecord;
+    private DNSBootstrapService mockDNSBootstrapService;
+    private SimpleResolver mockSimpleResolver;
+    private ValidatingResolver mockValidatingResolver;
+    private DNSSECResolver testObj;
+    private Message responseMessage;
+    private Header spyHeader;
+    private Record answerRecord;
 
     @Before
     public void beforeTest() {

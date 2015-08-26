@@ -41,14 +41,14 @@ import static org.mockito.Mockito.*;
 @PrepareForTest(TLSAValidator.class)
 public class TLSAValidatorTest {
 
-    DNSSECResolver mockResolver;
-    CACertService caCertService;
-    CertChainValidator chainValidator;
+    private DNSSECResolver mockResolver;
+    private CACertService caCertService;
+    private CertChainValidator chainValidator;
 
-    TLSAValidator testObj;
-    TLSARecord testRecord;
-    List<Certificate> certs;
-    byte[] certData;
+    private TLSAValidator testObj;
+    private TLSARecord testRecord;
+    private List<Certificate> certs;
+    private byte[] certData;
 
     @Before
     public void setUp() {
@@ -88,7 +88,7 @@ public class TLSAValidatorTest {
      *
      * @param dn the X.509 Distinguished Name, eg "CN=Test, L=London, C=GB"
      */
-    X509Certificate generateCertificate(String dn) throws Exception {
+    private X509Certificate generateCertificate(String dn) throws Exception {
 
         X500Name x500nameIssuer = new X500Name("CN=TestCA,L=Den Haag, C=NL");
         X500Name x500nameSubject = new X500Name(dn);
