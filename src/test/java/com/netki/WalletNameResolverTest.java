@@ -14,6 +14,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.xbill.DNS.Type;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -36,6 +38,13 @@ public class WalletNameResolverTest {
             when(this.testObj.resolve(anyString(), anyString(), anyBoolean())).thenCallRealMethod();
             doCallRealMethod().when(this.testObj).setDNSSECResolver(any(DNSSECResolver.class));
             doCallRealMethod().when(this.testObj).setTlsaValidator(any(TLSAValidator.class));
+
+            // Setup Backup
+            doCallRealMethod().when(this.mockResolver).getBackupDnsServers();
+            doCallRealMethod().when(this.mockResolver).setBackupDnsServers(any(List.class));
+            doCallRealMethod().when(this.mockResolver).useBackupDnsServer(any(Integer.class));
+            this.mockResolver.setBackupDnsServers(Arrays.asList("8.8.8.8", "8.8.4.4"));
+
             this.testObj.setDNSSECResolver(this.mockResolver);
             this.testObj.setTlsaValidator(this.mockTlsaValidator);
         } catch (WalletNameLookupException e) {
@@ -164,6 +173,7 @@ public class WalletNameResolverTest {
 
     @Test
     public void resolve_CurrencyResolverException() {
+
         try {
             when(this.mockResolver.resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT))).thenThrow(new DNSSECException("message"));
         } catch (Exception e) {
@@ -176,12 +186,34 @@ public class WalletNameResolverTest {
         } catch (WalletNameLookupException e) {
             try {
                 assertEquals("message", e.getMessage());
-                verify(this.mockResolver, times(1)).resolve(anyString(), eq(Type.TXT));
+                verify(this.mockResolver, times(3)).resolve(anyString(), eq(Type.TXT));
                 verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));
                 verify(this.testObj, never()).processWalletNameUrl(any(URL.class), anyBoolean());
             } catch (Exception e1) {
                 fail("Failure in Test Validation: " + e1.getMessage());
             }
+        } catch (Exception e) {
+            fail("Unknown Test Failure: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void resolve_CurrencyResolverExceptionRetry() {
+
+        try {
+            when(this.mockResolver.resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT))).thenThrow(new DNSSECException("message")).thenReturn("btc ltc");
+            when(this.mockResolver.resolve(eq("_btc._wallet.wallet.domain.com."), eq(Type.TXT))).thenReturn("1CpLXM15vjULK3ZPGUTDMUcGATGR9xGitv");
+        } catch (Exception e) {
+            fail("Failure to Setup Test: " + e.getMessage());
+        }
+
+        try {
+            BitcoinURI result = this.testObj.resolve("wallet.domain.com", "btc", true);
+            assertNotNull(result.getAddress());
+            assertEquals("1CpLXM15vjULK3ZPGUTDMUcGATGR9xGitv", result.getAddress().toString());
+            verify(this.mockResolver, times(3)).resolve(anyString(), eq(Type.TXT));
+            verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));
+            verify(this.testObj, never()).processWalletNameUrl(any(URL.class), anyBoolean());
         } catch (Exception e) {
             fail("Unknown Test Failure: " + e.getMessage());
         }
@@ -253,12 +285,33 @@ public class WalletNameResolverTest {
         } catch (WalletNameLookupException e) {
             try {
                 assertEquals("message", e.getMessage());
-                verify(this.mockResolver, times(2)).resolve(anyString(), eq(Type.TXT));
+                verify(this.mockResolver, times(6)).resolve(anyString(), eq(Type.TXT));
                 verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));
                 verify(this.testObj, never()).processWalletNameUrl(any(URL.class), anyBoolean());
             } catch (Exception e1) {
                 fail("Failure in Test Validation: " + e1.getMessage());
             }
+        } catch (Exception e) {
+            fail("Unknown Test Failure: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void resolve_AddressResolutionExceptionRetry() {
+        try {
+            when(this.mockResolver.resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT))).thenReturn("btc ltc");
+            when(this.mockResolver.resolve(eq("_btc._wallet.wallet.domain.com."), eq(Type.TXT))).thenThrow(new DNSSECException("message")).thenReturn("1CpLXM15vjULK3ZPGUTDMUcGATGR9xGitv");
+        } catch (Exception e) {
+            fail("Failure to Setup Test: " + e.getMessage());
+        }
+
+        try {
+            BitcoinURI result = this.testObj.resolve("wallet.domain.com", "btc", true);
+            assertNotNull(result.getAddress());
+            assertEquals("1CpLXM15vjULK3ZPGUTDMUcGATGR9xGitv", result.getAddress().toString());
+            verify(this.mockResolver, times(4)).resolve(anyString(), eq(Type.TXT));
+            verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));
+            verify(this.testObj, never()).processWalletNameUrl(any(URL.class), anyBoolean());
         } catch (Exception e) {
             fail("Unknown Test Failure: " + e.getMessage());
         }

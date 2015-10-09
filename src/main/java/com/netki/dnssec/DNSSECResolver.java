@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,6 +27,10 @@ public class DNSSECResolver {
 
     private static final String ROOT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
 
+    // Setup Backup DNS Server List with Google Public DNS Servers as defaults
+    private List<String> backupDnsServers = Arrays.asList("8.8.8.8", "8.8.4.4");
+    private String selectedDnsServer;
+
     /**
      * DNSSECResolver Constructor
      *
@@ -34,7 +39,9 @@ public class DNSSECResolver {
      */
     public DNSSECResolver(DNSBootstrapService dnsBootstrapService) throws UnknownHostException {
         this.dnsServers = dnsBootstrapService.getSystemDNSServers();
-        this.simpleResolver = new SimpleResolver(this.dnsServers.get(0).getHostAddress());
+
+        this.selectedDnsServer = this.dnsServers.get(0).getHostAddress();
+        this.simpleResolver = new SimpleResolver(this.selectedDnsServer);
         this.validatingResolver = new ValidatingResolver(this.simpleResolver);
     }
 
@@ -56,6 +63,40 @@ public class DNSSECResolver {
     }
 
     /**
+     * Get Selected DNS Server
+     * @return IP Address String of Selected DNS Server
+     */
+    public String getSelectedDnsServer() {
+        return this.selectedDnsServer;
+    }
+
+    /**
+     * Set Backup Server List
+     * @param backupDnsServers List of Strings containing backup DNS server IP addresses
+     */
+    public void setBackupDnsServers(List<String> backupDnsServers) { this.backupDnsServers = backupDnsServers; }
+
+    /**
+     * Get Backup DNS Server List
+     * @return List of backup DNS servers
+     */
+    public List<String> getBackupDnsServers() { return this.backupDnsServers; }
+
+    /**
+     * Use Backup DNS Server identified by index
+     * @param index of backup DNS server
+     */
+    public void useBackupDnsServer(int index) {
+        this.selectedDnsServer = backupDnsServers.get(index);
+
+        try {
+            this.simpleResolver = new SimpleResolver(this.selectedDnsServer);
+        } catch (UnknownHostException ignore) {
+        }
+        this.validatingResolver = new ValidatingResolver(this.simpleResolver);
+    }
+
+    /**
      * Resolve a DNS label of type type (types can be found here: org.xbill.DNS.Type) using DNSSEC
      *
      * @param label - DNS label to resolve using DNSSEC
@@ -69,7 +110,7 @@ public class DNSSECResolver {
         try {
             this.validatingResolver.loadTrustAnchors(new ByteArrayInputStream(ROOT.getBytes("ASCII")));
         } catch (UnknownHostException e) {
-            throw new DNSSECException("Unknown DNS Host: " + this.dnsServers.get(0).getHostAddress());
+            throw new DNSSECException("Unknown DNS Host: " + this.selectedDnsServer);
         } catch (UnsupportedEncodingException e) {
             throw new DNSSECException("Unsupported Trust Anchor Encoding");
         } catch (IOException e) {

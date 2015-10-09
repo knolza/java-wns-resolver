@@ -28,6 +28,7 @@ public class WalletNameResolver {
 
     private DNSSECResolver resolver;
     private TLSAValidator tlsaValidator;
+    private int backupDnsServerIndex = 0;
 
     /**
      * Setup a new WalletNameResolver with default DNSSECResolver and TLSAValidator
@@ -70,7 +71,8 @@ public class WalletNameResolver {
 
         WalletNameResolver resolver = new WalletNameResolver(dnssecResolver, new TLSAValidator(dnssecResolver, caCertService, chainValidator));
         try {
-            BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
+            //BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
+            BitcoinURI resolved = resolver.resolve("wallet.justinnewton.me", "btc", false);
             System.out.println(String.format("WalletNameResolver: %s", resolved));
         } catch (WalletNameLookupException e) {
             System.out.println("WalletNameResolverException Caught!");
@@ -125,7 +127,11 @@ public class WalletNameResolver {
                 throw new WalletNameLookupException("No Wallet Name Currency List Present");
             }
         } catch (DNSSECException e) {
-            throw new WalletNameLookupException(e.getMessage());
+            if(this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
+                throw new WalletNameLookupException(e.getMessage());
+            }
+            this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
+            return this.resolve(label, currency, validateTLSA);
         }
 
         ArrayList<String> currencies = new ArrayList<String>(Arrays.asList(availableCurrencies.split(" ")));
@@ -139,7 +145,11 @@ public class WalletNameResolver {
                 throw new WalletNameLookupException("Currency Not Available");
             }
         } catch (DNSSECException e) {
-            throw new WalletNameLookupException(e.getMessage());
+            if(this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
+                throw new WalletNameLookupException(e.getMessage());
+            }
+            this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
+            return this.resolve(label, currency, validateTLSA);
         }
 
 
@@ -150,6 +160,7 @@ public class WalletNameResolver {
         } catch (MalformedURLException e) { /* This is not a URL */ }
 
         try {
+            this.backupDnsServerIndex = 0;
             return new BitcoinURI(new MainNetParams(), resolved);
         } catch (BitcoinURIParseException e) {
             try {

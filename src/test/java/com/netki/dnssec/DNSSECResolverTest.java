@@ -80,6 +80,22 @@ public class DNSSECResolverTest {
     }
 
     @Test
+    public void testBackupDnsServers() {
+
+        List<String> backupServers = testObj.getBackupDnsServers();
+
+        assertEquals(2, backupServers.size());
+        assertEquals("8.8.8.8", backupServers.get(0));
+        assertEquals("8.8.4.4", backupServers.get(1));
+
+        testObj.useBackupDnsServer(0);
+        assertEquals("8.8.8.8", testObj.getSelectedDnsServer());
+
+        testObj.useBackupDnsServer(1);
+        assertEquals("8.8.4.4", testObj.getSelectedDnsServer());
+    }
+
+    @Test
     public void resolveGoRight() {
         try {
             String result = testObj.resolve("wallet.domain.com", Type.TXT);
