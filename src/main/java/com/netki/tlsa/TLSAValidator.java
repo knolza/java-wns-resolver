@@ -1,5 +1,6 @@
 package com.netki.tlsa;
 
+import com.google.common.io.BaseEncoding;
 import com.netki.dns.DNSBootstrapService;
 import com.netki.dns.DNSUtil;
 import com.netki.dnssec.DNSSECResolver;
@@ -95,7 +96,7 @@ public class TLSAValidator {
                 }
                 break;
             case TLSARecord.CertificateUsage.TRUST_ANCHOR_ASSERTION:
-                if(isValidCertChain(matchingCert, certs) && matchingCert == certs.get(certs.size() - 1)) {
+                if(isValidCertChain(certs.get(0), certs) && matchingCert == certs.get(certs.size() - 1)) {
                     return true;
                 }
                 break;
@@ -224,16 +225,6 @@ public class TLSAValidator {
         return new ArrayList<Certificate>();
     }
 
-    public byte[] hexStringToByteArray(String s) {
-        byte[] b = new byte[s.length() / 2];
-        for (int i = 0; i < b.length; i++) {
-            int index = i * 2;
-            int v = Integer.parseInt(s.substring(index, index + 2), 16);
-            b[i] = (byte) v;
-        }
-        return b;
-    }
-
     /**
      * Handle DNSSEC resolution for the URL's associated TLSA record
      *
@@ -268,7 +259,7 @@ public class TLSAValidator {
                     Integer.parseInt(tlsaValues[0]),
                     Integer.parseInt(tlsaValues[1]),
                     Integer.parseInt(tlsaValues[2]),
-                    hexStringToByteArray(tlsaValues[3])
+                    BaseEncoding.base16().decode(tlsaValues[3])
             );
         } catch (TextParseException e) {
             return null;
