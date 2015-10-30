@@ -2,9 +2,12 @@ package com.netki.tlsa;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
@@ -55,6 +58,7 @@ public class CACertService {
     public KeyStore getCaCertKeystore() {
         try {
             KeyStore returnKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            returnKeyStore.load(null, null);
             Enumeration<String> e = CACertService.caCertKeystore.aliases();
             while(e.hasMoreElements()) {
                 Certificate cert = CACertService.caCertKeystore.getCertificate(e.nextElement());
@@ -62,6 +66,12 @@ public class CACertService {
             }
             return CACertService.caCertKeystore;
         } catch (KeyStoreException e) {
+            return null;
+        } catch (CertificateException e) {
+            return null;
+        } catch (NoSuchAlgorithmException e) {
+            return null;
+        } catch (IOException e) {
             return null;
         }
     }

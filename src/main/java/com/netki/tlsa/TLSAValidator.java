@@ -224,6 +224,16 @@ public class TLSAValidator {
         return new ArrayList<Certificate>();
     }
 
+    public byte[] hexStringToByteArray(String s) {
+        byte[] b = new byte[s.length() / 2];
+        for (int i = 0; i < b.length; i++) {
+            int index = i * 2;
+            int v = Integer.parseInt(s.substring(index, index + 2), 16);
+            b[i] = (byte) v;
+        }
+        return b;
+    }
+
     /**
      * Handle DNSSEC resolution for the URL's associated TLSA record
      *
@@ -258,7 +268,7 @@ public class TLSAValidator {
                     Integer.parseInt(tlsaValues[0]),
                     Integer.parseInt(tlsaValues[1]),
                     Integer.parseInt(tlsaValues[2]),
-                    new BigInteger(tlsaValues[3], 16).toByteArray()
+                    hexStringToByteArray(tlsaValues[3])
             );
         } catch (TextParseException e) {
             return null;
