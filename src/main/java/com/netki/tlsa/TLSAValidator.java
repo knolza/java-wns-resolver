@@ -65,7 +65,7 @@ public class TLSAValidator {
      * @param url URL Root to Generate TLSA record query
      * @return TLSA Validated or not (boolean)
      */
-    public boolean validateTLSA(URL url) {
+    public boolean validateTLSA(URL url) throws ValidSelfSignedCertException {
 
         TLSARecord tlsaRecord = getTLSARecord(url);
         if(tlsaRecord == null) {
@@ -97,12 +97,12 @@ public class TLSAValidator {
                 break;
             case TLSARecord.CertificateUsage.TRUST_ANCHOR_ASSERTION:
                 if(isValidCertChain(certs.get(0), certs) && matchingCert == certs.get(certs.size() - 1)) {
-                    return true;
+                    throw new ValidSelfSignedCertException(matchingCert);
                 }
                 break;
             case TLSARecord.CertificateUsage.DOMAIN_ISSUED_CERTIFICATE:
                 // We've found a matching cert that does not require PKIX Chain Validation [RFC6698]
-                return true;
+                throw new ValidSelfSignedCertException(matchingCert);
         }
 
         return false;

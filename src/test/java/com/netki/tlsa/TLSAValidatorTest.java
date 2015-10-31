@@ -149,7 +149,9 @@ public class TLSAValidatorTest {
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(1));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(true);
 
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -173,7 +175,9 @@ public class TLSAValidatorTest {
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(0));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(true);
 
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -198,7 +202,9 @@ public class TLSAValidatorTest {
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(1));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(false);
 
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -229,7 +235,9 @@ public class TLSAValidatorTest {
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(0));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(true);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -260,7 +268,9 @@ public class TLSAValidatorTest {
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(1));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(true);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -291,7 +301,9 @@ public class TLSAValidatorTest {
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(0));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(false);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -322,12 +334,18 @@ public class TLSAValidatorTest {
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(2));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(true);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
 
         try {
-            boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
-            assertTrue(result);
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {
+            assertTrue(false);
+        }
 
+        try {
+            testObj.validateTLSA(new URL("https://wallet.domain.com"));
+            assertTrue(false);
+        } catch (ValidSelfSignedCertException ve) {
+            assertEquals(ve.getRootCert(), certs.get(2));
             verify(testObj).getTLSARecord(any(URL.class));
             verify(testObj).getUrlCerts(any(URL.class));
             verify(testObj).getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class));
@@ -353,7 +371,9 @@ public class TLSAValidatorTest {
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(0));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(true);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -384,7 +404,9 @@ public class TLSAValidatorTest {
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(2));
         when(testObj.isValidCertChain(any(Certificate.class), anyListOf(Certificate.class))).thenReturn(false);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -414,11 +436,14 @@ public class TLSAValidatorTest {
         when(testObj.getTLSARecord(any(URL.class))).thenReturn(this.testRecord);
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(certs.get(0));
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
-            boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
-            assertTrue(result);
+            testObj.validateTLSA(new URL("https://wallet.domain.com"));
+            assertFalse(true);
+        } catch (ValidSelfSignedCertException vssc) {
 
             verify(testObj).getTLSARecord(any(URL.class));
             verify(testObj).getUrlCerts(any(URL.class));
@@ -436,7 +461,9 @@ public class TLSAValidatorTest {
 
         TLSAValidator testObj = mock(TLSAValidator.class);
         when(testObj.getTLSARecord(any(URL.class))).thenReturn(null);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -465,7 +492,9 @@ public class TLSAValidatorTest {
         TLSAValidator testObj = mock(TLSAValidator.class);
         when(testObj.getTLSARecord(any(URL.class))).thenReturn(this.testRecord);
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(null);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -494,7 +523,9 @@ public class TLSAValidatorTest {
         TLSAValidator testObj = mock(TLSAValidator.class);
         when(testObj.getTLSARecord(any(URL.class))).thenReturn(this.testRecord);
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(new ArrayList<Certificate>());
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -524,7 +555,9 @@ public class TLSAValidatorTest {
         when(testObj.getTLSARecord(any(URL.class))).thenReturn(this.testRecord);
         when(testObj.getUrlCerts(any(URL.class))).thenReturn(certs);
         when(testObj.getMatchingCert(any(TLSARecord.class), anyListOf(Certificate.class))).thenReturn(null);
-        when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        try {
+            when(testObj.validateTLSA(any(URL.class))).thenCallRealMethod();
+        } catch (ValidSelfSignedCertException ve) {}
 
         try {
             boolean result = testObj.validateTLSA(new URL("https://wallet.domain.com"));
@@ -714,7 +747,7 @@ public class TLSAValidatorTest {
 
         // Setup Test
         URL submitUrl = null;
-        String TLSAText = "0 1 2 1bf4bfb2bfbf1e8bfbf1bfbfbfa7274b";
+        String TLSAText = "0 1 2 1BF4BFB2BFBF1E8BFBF1BFBFBFA7274B";
 
         try {
             when(this.mockResolver.resolve("_443._tcp.wallet.domain.com.", Type.TLSA)).thenReturn(TLSAText);
@@ -746,7 +779,7 @@ public class TLSAValidatorTest {
 
         // Setup Test
         URL submitUrl = null;
-        String TLSAText = "0 1 2 1bf4bfb2bfbf1e8bfbf1bfbfbfa7274b";
+        String TLSAText = "0 1 2 1BF4BFB2BFBF1E8BFBF1BFBFBFA7274B";
 
         try {
             when(this.mockResolver.resolve("_8181._tcp.wallet.domain.com.", Type.TLSA)).thenReturn(TLSAText);

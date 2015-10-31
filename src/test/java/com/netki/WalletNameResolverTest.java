@@ -2,6 +2,7 @@ package com.netki;
 
 import com.netki.dnssec.DNSSECResolver;
 import com.netki.exceptions.DNSSECException;
+import com.netki.exceptions.PaymentRequestReceivedException;
 import com.netki.exceptions.WalletNameLookupException;
 import com.netki.tlsa.TLSAValidator;
 import org.bitcoinj.uri.BitcoinURI;
@@ -48,6 +49,8 @@ public class WalletNameResolverTest {
             this.testObj.setDNSSECResolver(this.mockResolver);
             this.testObj.setTlsaValidator(this.mockTlsaValidator);
         } catch (WalletNameLookupException e) {
+            e.printStackTrace();
+        } catch (PaymentRequestReceivedException e) {
             e.printStackTrace();
         }
     }

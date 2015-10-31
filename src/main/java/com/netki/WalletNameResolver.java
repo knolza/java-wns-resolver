@@ -1,23 +1,33 @@
 package com.netki;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.netki.dns.DNSBootstrapService;
 import com.netki.dns.DNSUtil;
 import com.netki.dnssec.DNSSECResolver;
 import com.netki.exceptions.DNSSECException;
+import com.netki.exceptions.PaymentRequestReceivedException;
 import com.netki.exceptions.WalletNameLookupException;
 import com.netki.tlsa.CACertService;
 import com.netki.tlsa.CertChainValidator;
 import com.netki.tlsa.TLSAValidator;
+import com.netki.tlsa.ValidSelfSignedCertException;
+import org.bitcoin.protocols.payments.Protos;
 import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.protocols.payments.PaymentProtocol;
 import org.bitcoinj.uri.BitcoinURI;
 import org.bitcoinj.uri.BitcoinURIParseException;
 import org.xbill.DNS.*;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.*;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.*;
 
 /**
@@ -74,6 +84,9 @@ public class WalletNameResolver {
             //BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
             BitcoinURI resolved = resolver.resolve("wallet.justinnewton.me", "btc", false);
             System.out.println(String.format("WalletNameResolver: %s", resolved));
+        } catch (PaymentRequestReceivedException pre) {
+            Protos.PaymentRequest pr = pre.getPaymentRequest();
+            System.out.println(pr);
         } catch (WalletNameLookupException e) {
             System.out.println("WalletNameResolverException Caught!");
             e.printStackTrace();
@@ -109,7 +122,7 @@ public class WalletNameResolver {
      * @return Raw Cryptocurrency Address or Bitcoin URI (BIP21/BIP72)
      * @throws WalletNameLookupException Wallet Name Lookup Failure including message
      */
-    public BitcoinURI resolve(String label, String currency, boolean validateTLSA) throws WalletNameLookupException {
+    public BitcoinURI resolve(String label, String currency, boolean validateTLSA) throws WalletNameLookupException, PaymentRequestReceivedException {
 
         label = label.toLowerCase();
         currency = currency.toLowerCase();
@@ -179,18 +192,22 @@ public class WalletNameResolver {
      * @return String data value returned by URL Endpoint
      * @throws WalletNameLookupException Wallet Name Address Service URL Processing Failure
      */
-    public BitcoinURI processWalletNameUrl(URL url, boolean verifyTLSA) throws WalletNameLookupException {
+    public BitcoinURI processWalletNameUrl(URL url, boolean verifyTLSA) throws WalletNameLookupException, PaymentRequestReceivedException {
 
         HttpsURLConnection conn = null;
         InputStream ins;
         InputStreamReader isr;
         BufferedReader in = null;
+        Certificate possibleRootCert = null;
 
         if (verifyTLSA) {
             try {
                 if (!this.tlsaValidator.validateTLSA(url)) {
                     throw new WalletNameLookupException("TLSA Validation Failed");
                 }
+            } catch (ValidSelfSignedCertException ve) {
+                // TLSA Uses a Self-Signed Root Cert, We Need to Add to CACerts
+                possibleRootCert = ve.getRootCert();
             } catch (Exception e) {
                 throw new WalletNameLookupException("TLSA Validation Failed: " + e.getMessage());
             }
@@ -198,6 +215,26 @@ public class WalletNameResolver {
 
         try {
             conn = (HttpsURLConnection) url.openConnection();
+
+            // If we have a self-signed cert returned during TLSA Validation, add it to the SSLContext for the HTTPS Connection
+            if (possibleRootCert != null) {
+                try {
+                    KeyStore ssKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                    ssKeystore.load(null, null);
+                    ssKeystore.setCertificateEntry(((X509Certificate)possibleRootCert).getSubjectDN().toString(), possibleRootCert);
+
+                    TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    tmf.init(ssKeystore);
+
+                    SSLContext ctx = SSLContext.getInstance("TLS");
+                    ctx.init(null, tmf.getTrustManagers(), null);
+
+                    conn.setSSLSocketFactory(ctx.getSocketFactory());
+                } catch (Exception e) {
+                    throw new WalletNameLookupException("Failed to Add TLSA Self Signed Certificate to HttpsURLConnection");
+                }
+
+            }
             ins = conn.getInputStream();
             isr = new InputStreamReader(ins);
             in = new BufferedReader(isr);
@@ -211,6 +248,11 @@ public class WalletNameResolver {
             try {
                 return new BitcoinURI(new MainNetParams(), data);
             } catch (BitcoinURIParseException e) {
+                try {
+                    // This might be a PaymentRequest, if so, throw an exception containing the PaymentRequest
+                    Protos.PaymentRequest pr = Protos.PaymentRequest.parseFrom(data.getBytes());
+                    throw new PaymentRequestReceivedException(pr);
+                } catch (InvalidProtocolBufferException e1) { /* Do Nothing */ }
                 throw new WalletNameLookupException("Unable to create BitcoinURI: " + e.getMessage());
             }
         } catch (IOException e) {
