@@ -1,19 +1,15 @@
 package com.netki;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.netki.dns.DNSBootstrapService;
 import com.netki.dns.DNSUtil;
 import com.netki.dnssec.DNSSECResolver;
 import com.netki.exceptions.DNSSECException;
-import com.netki.exceptions.PaymentRequestReceivedException;
 import com.netki.exceptions.WalletNameLookupException;
 import com.netki.tlsa.CACertService;
 import com.netki.tlsa.CertChainValidator;
 import com.netki.tlsa.TLSAValidator;
 import com.netki.tlsa.ValidSelfSignedCertException;
-import org.bitcoin.protocols.payments.Protos;
 import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.protocols.payments.PaymentProtocol;
 import org.bitcoinj.uri.BitcoinURI;
 import org.bitcoinj.uri.BitcoinURIParseException;
 import org.xbill.DNS.*;
@@ -84,9 +80,6 @@ public class WalletNameResolver {
             //BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
             BitcoinURI resolved = resolver.resolve("wallet.justinnewton.me", "btc", false);
             System.out.println(String.format("WalletNameResolver: %s", resolved));
-        } catch (PaymentRequestReceivedException pre) {
-            Protos.PaymentRequest pr = pre.getPaymentRequest();
-            System.out.println(pr);
         } catch (WalletNameLookupException e) {
             System.out.println("WalletNameResolverException Caught!");
             e.printStackTrace();
@@ -111,28 +104,9 @@ public class WalletNameResolver {
         this.tlsaValidator = validator;
     }
 
-    /**
-     * Resolve a Wallet Name
-     *
-     * This method is thread safe as it does not depend on any externally mutable variables.
-     *
-     * @param label        DNS Name (i.e., wallet.mattdavid.xyz)
-     * @param currency     3 Letter Code to Denote the Requested Currency (i.e., "btc", "ltc", "dgc")
-     * @param validateTLSA Boolean to require TLSA validation for an URL Endpoints
-     * @return Raw Cryptocurrency Address or Bitcoin URI (BIP21/BIP72)
-     * @throws WalletNameLookupException Wallet Name Lookup Failure including message
-     */
-    public BitcoinURI resolve(String label, String currency, boolean validateTLSA) throws WalletNameLookupException, PaymentRequestReceivedException {
-
-        label = label.toLowerCase();
-        currency = currency.toLowerCase();
-
-        if (label.isEmpty()) {
-            throw new WalletNameLookupException("Wallet Name Label Must Non-Empty");
-        }
+    public List<String> getAvailableCurrencies(String label) throws WalletNameLookupException {
 
         String availableCurrencies;
-        String resolved;
 
         try {
             availableCurrencies = this.resolver.resolve(String.format("_wallet.%s", DNSUtil.ensureDot(label)), Type.TXT);
@@ -144,18 +118,37 @@ public class WalletNameResolver {
                 throw new WalletNameLookupException(e.getMessage());
             }
             this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
-            return this.resolve(label, currency, validateTLSA);
+            return this.getAvailableCurrencies(label);
         }
 
-        ArrayList<String> currencies = new ArrayList<String>(Arrays.asList(availableCurrencies.split(" ")));
-        if (!currencies.contains(currency)) {
-            throw new WalletNameLookupException("Currency Not Available");
+        return new ArrayList<String>(Arrays.asList(availableCurrencies.split(" ")));
+    }
+
+    /**
+     * Resolve a Wallet Name
+     *
+     * This method is thread safe as it does not depend on any externally mutable variables.
+     *
+     * @param label        DNS Name (i.e., wallet.mattdavid.xyz)
+     * @param currency     3 Letter Code to Denote the Requested Currency (i.e., "btc", "ltc", "dgc")
+     * @param validateTLSA Boolean to require TLSA validation for an URL Endpoints
+     * @return Raw Cryptocurrency Address or Bitcoin URI (BIP21/BIP72)
+     * @throws WalletNameLookupException Wallet Name Lookup Failure including message
+     */
+    public BitcoinURI resolve(String label, String currency, boolean validateTLSA) throws WalletNameLookupException {
+
+        String resolved;
+        label = label.toLowerCase();
+        currency = currency.toLowerCase();
+
+        if (label.isEmpty()) {
+            throw new WalletNameLookupException("Wallet Name Label Must Non-Empty");
         }
 
         try {
             resolved = this.resolver.resolve(String.format("_%s._wallet.%s", currency, DNSUtil.ensureDot(label)), Type.TXT);
-            if (resolved.equals("")) {
-                throw new WalletNameLookupException("Currency Not Available");
+            if (resolved == null || resolved.equals("")) {
+                throw new WalletNameLookupException("Currency Not Available in Wallet Name");
             }
         } catch (DNSSECException e) {
             if(this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
@@ -192,7 +185,7 @@ public class WalletNameResolver {
      * @return String data value returned by URL Endpoint
      * @throws WalletNameLookupException Wallet Name Address Service URL Processing Failure
      */
-    public BitcoinURI processWalletNameUrl(URL url, boolean verifyTLSA) throws WalletNameLookupException, PaymentRequestReceivedException {
+    public BitcoinURI processWalletNameUrl(URL url, boolean verifyTLSA) throws WalletNameLookupException {
 
         HttpsURLConnection conn = null;
         InputStream ins;
@@ -248,11 +241,6 @@ public class WalletNameResolver {
             try {
                 return new BitcoinURI(new MainNetParams(), data);
             } catch (BitcoinURIParseException e) {
-                try {
-                    // This might be a PaymentRequest, if so, throw an exception containing the PaymentRequest
-                    Protos.PaymentRequest pr = Protos.PaymentRequest.parseFrom(data.getBytes());
-                    throw new PaymentRequestReceivedException(pr);
-                } catch (InvalidProtocolBufferException e1) { /* Do Nothing */ }
                 throw new WalletNameLookupException("Unable to create BitcoinURI: " + e.getMessage());
             }
         } catch (IOException e) {
