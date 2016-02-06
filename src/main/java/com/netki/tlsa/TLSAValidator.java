@@ -64,6 +64,7 @@ public class TLSAValidator {
      *
      * @param url URL Root to Generate TLSA record query
      * @return TLSA Validated or not (boolean)
+     * @throws ValidSelfSignedCertException Return Matching Self Signed Cert for Inclusion into CertStore
      */
     public boolean validateTLSA(URL url) throws ValidSelfSignedCertException {
 

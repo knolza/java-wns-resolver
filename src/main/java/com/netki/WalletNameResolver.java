@@ -128,7 +128,7 @@ public class WalletNameResolver {
 
     /**
      * Resolve a Wallet Name
-     * <p/>
+     * <p></p>
      * This method is thread safe as it does not depend on any externally mutable variables.
      *
      * @param label        DNS Name (i.e., wallet.mattdavid.xyz)
