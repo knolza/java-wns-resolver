@@ -6,7 +6,7 @@
 
     <groupId>com.netki</groupId>
     <artifactId>wallet-name-resolver</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <packaging>jar</packaging>
 
     <name>Wallet Name Resolver</name>
@@ -132,6 +132,11 @@
             <artifactId>bcpkix-jdk15on</artifactId>
             <version>1.52</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.52</version>
         </dependency>
         <dependency>
             <groupId>org.jitsi</groupId>

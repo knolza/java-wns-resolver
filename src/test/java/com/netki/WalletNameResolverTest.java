@@ -37,6 +37,7 @@ public class WalletNameResolverTest {
         try {
             when(this.testObj.resolve(anyString(), anyString(), anyBoolean())).thenCallRealMethod();
             when(this.testObj.getAvailableCurrencies(anyString())).thenCallRealMethod();
+            when(this.testObj.preprocessWalletName(anyString())).thenCallRealMethod();
             doCallRealMethod().when(this.testObj).setDNSSECResolver(any(DNSSECResolver.class));
             doCallRealMethod().when(this.testObj).setTlsaValidator(any(TLSAValidator.class));
 
@@ -301,6 +302,36 @@ public class WalletNameResolverTest {
             verify(this.mockResolver, times(1)).resolve(anyString(), eq(Type.TXT));
             verify(this.mockTlsaValidator, never()).validateTLSA(any(URL.class));
             verify(this.testObj, never()).processWalletNameUrl(eq(new URL("https://addressimo.netki.com/resolve/87593487594375943798347345")), anyBoolean());
+        } catch (Exception e) {
+            fail("Unknown Test Failure: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void preprocessWalletName_NonEmail() {
+        try {
+            String result = this.testObj.preprocessWalletName("user.domain.com");
+            assertEquals("user.domain.com", result);
+        } catch (Exception e) {
+            fail("Unknown Test Failure: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void preprocessWalletName_Email() {
+        try {
+            String result = this.testObj.preprocessWalletName("user@domain.com");
+            assertEquals("147ad31215fd55112ce613a7883902bb306aa35bba879cd2dbe500b9.domain.com", result);
+        } catch (Exception e) {
+            fail("Unknown Test Failure: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void preprocessWalletName_EmailDoubleAt() {
+        try {
+            String result = this.testObj.preprocessWalletName("user@user@domain.com");
+            assertEquals("147ad31215fd55112ce613a7883902bb306aa35bba879cd2dbe500b9.user@domain.com", result);
         } catch (Exception e) {
             fail("Unknown Test Failure: " + e.getMessage());
         }

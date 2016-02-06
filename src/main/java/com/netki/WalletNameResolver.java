@@ -12,6 +12,8 @@ import com.netki.tlsa.ValidSelfSignedCertException;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.uri.BitcoinURI;
 import org.bitcoinj.uri.BitcoinURIParseException;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.jcajce.provider.util.DigestFactory;
 import org.xbill.DNS.*;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -109,12 +111,12 @@ public class WalletNameResolver {
         String availableCurrencies;
 
         try {
-            availableCurrencies = this.resolver.resolve(String.format("_wallet.%s", DNSUtil.ensureDot(label)), Type.TXT);
+            availableCurrencies = this.resolver.resolve(String.format("_wallet.%s", DNSUtil.ensureDot(this.preprocessWalletName(label))), Type.TXT);
             if (availableCurrencies == null || availableCurrencies.equals("")) {
                 throw new WalletNameLookupException("No Wallet Name Currency List Present");
             }
         } catch (DNSSECException e) {
-            if(this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
+            if (this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
                 throw new WalletNameLookupException(e.getMessage());
             }
             this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
@@ -126,7 +128,7 @@ public class WalletNameResolver {
 
     /**
      * Resolve a Wallet Name
-     *
+     * <p/>
      * This method is thread safe as it does not depend on any externally mutable variables.
      *
      * @param label        DNS Name (i.e., wallet.mattdavid.xyz)
@@ -146,12 +148,12 @@ public class WalletNameResolver {
         }
 
         try {
-            resolved = this.resolver.resolve(String.format("_%s._wallet.%s", currency, DNSUtil.ensureDot(label)), Type.TXT);
+            resolved = this.resolver.resolve(String.format("_%s._wallet.%s", currency, DNSUtil.ensureDot(this.preprocessWalletName(label))), Type.TXT);
             if (resolved == null || resolved.equals("")) {
                 throw new WalletNameLookupException("Currency Not Available in Wallet Name");
             }
         } catch (DNSSECException e) {
-            if(this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
+            if (this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
                 throw new WalletNameLookupException(e.getMessage());
             }
             this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
@@ -214,7 +216,7 @@ public class WalletNameResolver {
                 try {
                     KeyStore ssKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
                     ssKeystore.load(null, null);
-                    ssKeystore.setCertificateEntry(((X509Certificate)possibleRootCert).getSubjectDN().toString(), possibleRootCert);
+                    ssKeystore.setCertificateEntry(((X509Certificate) possibleRootCert).getSubjectDN().toString(), possibleRootCert);
 
                     TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                     tmf.init(ssKeystore);
@@ -256,6 +258,32 @@ public class WalletNameResolver {
                 conn.disconnect();
             }
         }
+    }
+
+    public String preprocessWalletName(String label) {
+        if (label.contains("@")) {
+            try {
+                //MessageDigest md = MessageDigest.getInstance("SHA-224");
+                Digest md = DigestFactory.getDigest("SHA-224");
+                String[] emailParts = label.split("@", 2);
+                md.update(emailParts[0].getBytes(), 0, emailParts[0].getBytes().length);
+                byte[] hash = new byte[md.getDigestSize()];
+                md.doFinal(hash, 0);
+                String localPart = this.getHexString(hash);
+                label = localPart + "." + emailParts[1];
+            } catch (Exception e) {
+                return label;
+            }
+        }
+        return label;
+    }
+
+    private String getHexString(byte[] b) throws Exception {
+        String result = "";
+        for (byte aB : b) {
+            result += Integer.toString((aB & 0xff) + 0x100, 16).substring(1);
+        }
+        return result;
     }
 
 }
