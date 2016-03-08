@@ -1,14 +1,12 @@
 package com.netki.dns;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.directory.InitialDirContext;
+import org.xbill.DNS.ResolverConfig;
+
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Properties;
 
 public class DNSBootstrapService {
 
@@ -17,23 +15,7 @@ public class DNSBootstrapService {
     /**
      * Create DNSBootstrapService from system defaults
      */
-    public DNSBootstrapService() {
-        Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
-        try {
-            this.env = new InitialDirContext(env).getEnvironment();
-        } catch (NamingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Create a DNSBootstrapService using a given environment (used for unit testing)
-     * @param env Environment Hashtable to provide java.naming.provider.url configuration value
-     */
-    public DNSBootstrapService(Hashtable<?, ?> env) {
-        this.env = env;
-    }
+    public DNSBootstrapService() {}
 
     /**
      * Get System DNS Servers
@@ -42,13 +24,12 @@ public class DNSBootstrapService {
     public List<InetAddress> getSystemDNSServers() {
 
         List<InetAddress> dnsServers = new ArrayList<InetAddress>();
+        ResolverConfig resolverConfig = new ResolverConfig();
 
         try {
-            String dnsProviderString = (String) this.env.get("java.naming.provider.url");
-            for(String dnsUriStr : dnsProviderString.split(" ")) {
-                if(dnsUriStr.equals("")) continue;
-                URI dnsUri = new URI(dnsUriStr);
-                dnsServers.add(InetAddress.getByName(dnsUri.getHost()));
+            for(String dnsHostIp : resolverConfig.servers()) {
+                if(dnsHostIp.equals("")) continue;
+                dnsServers.add(InetAddress.getByName(dnsHostIp));
             }
         } catch (Exception e) {
             e.printStackTrace();

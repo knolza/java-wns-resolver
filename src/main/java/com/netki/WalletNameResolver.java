@@ -12,8 +12,7 @@ import com.netki.tlsa.ValidSelfSignedCertException;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.uri.BitcoinURI;
 import org.bitcoinj.uri.BitcoinURIParseException;
-import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.jcajce.provider.util.DigestFactory;
+import org.spongycastle.crypto.digests.SHA224Digest;
 import org.xbill.DNS.*;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -263,8 +262,7 @@ public class WalletNameResolver {
     public String preprocessWalletName(String label) {
         if (label.contains("@")) {
             try {
-                //MessageDigest md = MessageDigest.getInstance("SHA-224");
-                Digest md = DigestFactory.getDigest("SHA-224");
+                SHA224Digest md = new SHA224Digest();
                 String[] emailParts = label.split("@", 2);
                 md.update(emailParts[0].getBytes(), 0, emailParts[0].getBytes().length);
                 byte[] hash = new byte[md.getDigestSize()];

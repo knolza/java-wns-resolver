@@ -1,19 +1,38 @@
 package com.netki.dns;
 
 import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.powermock.api.mockito.PowerMockito.when;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.xbill.DNS.ResolverConfig;
+
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.Hashtable;
 import java.util.List;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(DNSBootstrapService.class)
 public class DNSBootstrapServiceTest {
 
     @Test
     public void singleDnsServer() {
-        Hashtable<String, String> env = new Hashtable<String, String>();
-        env.put("java.naming.provider.url", "dns://8.8.8.8");
-        DNSBootstrapService testService = new DNSBootstrapService(env);
+
+        String[] dnsServers = { "8.8.8.8" };
+
+        try {
+            ResolverConfig mockResolver = PowerMockito.mock(ResolverConfig.class);
+            when(mockResolver.servers()).thenReturn(dnsServers);
+            PowerMockito.whenNew(ResolverConfig.class).withNoArguments().thenReturn(mockResolver);
+        } catch (Exception e) {
+            fail("Test Setup Failed: " + e.toString());
+        }
+
+        DNSBootstrapService testService = new DNSBootstrapService();
 
         List<InetAddress> addrs = testService.getSystemDNSServers();
 
@@ -23,10 +42,18 @@ public class DNSBootstrapServiceTest {
 
     @Test
     public void multipleDnsServers() {
-        Hashtable<String, String> env = new Hashtable<String, String>();
-        env.put("java.naming.provider.url", "dns://8.8.8.8 dns://8.8.4.4");
-        DNSBootstrapService testService = new DNSBootstrapService(env);
 
+        String[] dnsServers = { "8.8.8.8", "8.8.4.4" };
+
+        try {
+            ResolverConfig mockResolver = PowerMockito.mock(ResolverConfig.class);
+            when(mockResolver.servers()).thenReturn(dnsServers);
+            PowerMockito.whenNew(ResolverConfig.class).withNoArguments().thenReturn(mockResolver);
+        } catch (Exception e) {
+            fail("Test Setup Failed: " + e.toString());
+        }
+
+        DNSBootstrapService testService = new DNSBootstrapService();
         List<InetAddress> addrs = testService.getSystemDNSServers();
 
         assertEquals("Validate Addr Count", 2, addrs.size());
@@ -36,10 +63,18 @@ public class DNSBootstrapServiceTest {
 
     @Test
     public void noDnsServers() {
-        Hashtable<String, String> env = new Hashtable<String, String>();
-        env.put("java.naming.provider.url", "");
-        DNSBootstrapService testService = new DNSBootstrapService(env);
 
+        String[] dnsServers = { };
+
+        try {
+            ResolverConfig mockResolver = PowerMockito.mock(ResolverConfig.class);
+            when(mockResolver.servers()).thenReturn(dnsServers);
+            PowerMockito.whenNew(ResolverConfig.class).withNoArguments().thenReturn(mockResolver);
+        } catch (Exception e) {
+            fail("Test Setup Failed: " + e.toString());
+        }
+
+        DNSBootstrapService testService = new DNSBootstrapService();
         List<InetAddress> addrs = testService.getSystemDNSServers();
 
         assertEquals("Validate Addr Count", 0, addrs.size());
