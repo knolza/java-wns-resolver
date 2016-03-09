@@ -116,7 +116,7 @@ public class WalletNameResolver {
             }
         } catch (DNSSECException e) {
             if (this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
-                throw new WalletNameLookupException(e.getMessage());
+                throw new WalletNameLookupException(e.getMessage(), e);
             }
             this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
             return this.getAvailableCurrencies(label);
@@ -153,7 +153,7 @@ public class WalletNameResolver {
             }
         } catch (DNSSECException e) {
             if (this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
-                throw new WalletNameLookupException(e.getMessage());
+                throw new WalletNameLookupException(e.getMessage(), e);
             }
             this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
             return this.resolve(label, currency, validateTLSA);
@@ -173,7 +173,7 @@ public class WalletNameResolver {
             try {
                 return new BitcoinURI(new MainNetParams(), "bitcoin:" + resolved);
             } catch (BitcoinURIParseException e1) {
-                throw new WalletNameLookupException("BitcoinURI Creation Failed for " + resolved + ": " + e1.getMessage());
+                throw new WalletNameLookupException("BitcoinURI Creation Failed for " + resolved, e1);
             }
         }
     }
@@ -203,7 +203,7 @@ public class WalletNameResolver {
                 // TLSA Uses a Self-Signed Root Cert, We Need to Add to CACerts
                 possibleRootCert = ve.getRootCert();
             } catch (Exception e) {
-                throw new WalletNameLookupException("TLSA Validation Failed: " + e.getMessage());
+                throw new WalletNameLookupException("TLSA Validation Failed", e);
             }
         }
 
@@ -225,7 +225,7 @@ public class WalletNameResolver {
 
                     conn.setSSLSocketFactory(ctx.getSocketFactory());
                 } catch (Exception e) {
-                    throw new WalletNameLookupException("Failed to Add TLSA Self Signed Certificate to HttpsURLConnection");
+                    throw new WalletNameLookupException("Failed to Add TLSA Self Signed Certificate to HttpsURLConnection", e);
                 }
 
             }
@@ -242,11 +242,10 @@ public class WalletNameResolver {
             try {
                 return new BitcoinURI(new MainNetParams(), data);
             } catch (BitcoinURIParseException e) {
-                throw new WalletNameLookupException("Unable to create BitcoinURI: " + e.getMessage());
+                throw new WalletNameLookupException("Unable to create BitcoinURI", e);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new WalletNameLookupException("WalletName URL Connection Failed");
+            throw new WalletNameLookupException("WalletName URL Connection Failed", e);
         } finally {
             if (conn != null && in != null) {
                 try {

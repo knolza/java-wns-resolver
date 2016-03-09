@@ -8,4 +8,7 @@ public class WalletNameLookupException extends Exception {
         super(message);
     }
 
+    public WalletNameLookupException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }
