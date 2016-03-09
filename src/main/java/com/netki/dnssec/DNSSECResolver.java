@@ -145,6 +145,6 @@ public class DNSSECResolver {
             throw new DNSSECException("DNSSEC Lookup Failure: " + e.getMessage());
         }
 
-        throw new DNSSECException("Unknown DNSSEC Lookup Failure");
+        throw new DNSSECException("No Positive or Negative DNS/DNSSEC Response Returned.");
     }
 }

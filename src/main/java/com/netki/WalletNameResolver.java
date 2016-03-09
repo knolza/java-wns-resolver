@@ -80,6 +80,7 @@ public class WalletNameResolver {
         try {
             //BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
             BitcoinURI resolved = resolver.resolve("wallet.justinnewton.me", "btc", false);
+            //BitcoinURI resolved = resolver.resolve("khklsdfjghslfdgkjhldsfgkhjgsdf.tip.me", "btc", false);
             System.out.println(String.format("WalletNameResolver: %s", resolved));
         } catch (WalletNameLookupException e) {
             System.out.println("WalletNameResolverException Caught!");
@@ -158,7 +159,6 @@ public class WalletNameResolver {
             this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
             return this.resolve(label, currency, validateTLSA);
         }
-
 
         byte[] decodeResult = DatatypeConverter.parseBase64Binary(resolved);
         try {
