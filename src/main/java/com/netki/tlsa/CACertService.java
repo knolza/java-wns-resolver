@@ -1,7 +1,5 @@
 package com.netki.tlsa;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -10,6 +8,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+
+import org.bitcoinj.crypto.TrustStoreLoader;
 
 public class CACertService {
 
@@ -24,14 +24,8 @@ public class CACertService {
      * @throws KeyStoreException
      */
     private CACertService() throws KeyStoreException {
-
         try {
-
-            String filename = System.getProperty("java.home") + "/lib/security/cacerts".replace('/', File.separatorChar);
-            FileInputStream is = new FileInputStream(filename);
-            caCertKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            caCertKeystore.load(is, "changeit".toCharArray());
-
+            caCertKeystore = new TrustStoreLoader.DefaultTrustStoreLoader().getKeyStore();
         } catch (Exception e) {
             throw new KeyStoreException("Unable to Create CA Cert KeyStore: " + e.getMessage());
         }
