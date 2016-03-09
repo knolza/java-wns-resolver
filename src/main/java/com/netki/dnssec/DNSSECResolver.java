@@ -145,6 +145,7 @@ public class DNSSECResolver {
             throw new DNSSECException("DNSSEC Lookup Failure: " + e.getMessage());
         }
 
-        throw new DNSSECException("No Positive or Negative DNS/DNSSEC Response Returned.");
+        // No Valid Positive Response Returned and No Validating Failure Reason Negative DNS/DNSSEC Response Returned
+        return null;
     }
 }

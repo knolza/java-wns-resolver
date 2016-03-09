@@ -328,8 +328,8 @@ public class DNSSECResolverTest {
 
         try {
 
-            testObj.resolve("wallet.domain.com", Type.TXT);
-            fail("resolve should throw DNSSEC Exception");
+            String result = testObj.resolve("wallet.domain.com", Type.TXT);
+            assertNull(result);
         } catch (Exception e) {
             if(e instanceof DNSSECException) {
                 assertTrue(true);
