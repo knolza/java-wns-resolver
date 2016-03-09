@@ -137,9 +137,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.52</version>
+            <groupId>com.madgag.spongycastle</groupId>
+            <artifactId>pkix</artifactId>
+            <version>1.51.0.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
