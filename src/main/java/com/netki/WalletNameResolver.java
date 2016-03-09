@@ -1,5 +1,6 @@
 package com.netki;
 
+import com.google.common.io.BaseEncoding;
 import com.netki.dns.DNSBootstrapService;
 import com.netki.dns.DNSUtil;
 import com.netki.dnssec.DNSSECResolver;
@@ -17,7 +18,6 @@ import org.xbill.DNS.*;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.*;
 import java.security.KeyStore;
@@ -157,8 +157,7 @@ public class WalletNameResolver {
             this.resolver.useBackupDnsServer(this.backupDnsServerIndex++);
             return this.resolve(label, currency, validateTLSA);
         }
-
-        byte[] decodeResult = DatatypeConverter.parseBase64Binary(resolved);
+        byte[] decodeResult = BaseEncoding.base64().decode(resolved);
         try {
             URL walletNameUrl = new URL(new String(decodeResult));
             return processWalletNameUrl(walletNameUrl, validateTLSA);
