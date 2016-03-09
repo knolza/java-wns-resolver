@@ -9,7 +9,6 @@ import com.netki.tlsa.CACertService;
 import com.netki.tlsa.CertChainValidator;
 import com.netki.tlsa.TLSAValidator;
 import com.netki.tlsa.ValidSelfSignedCertException;
-import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.uri.BitcoinURI;
 import org.bitcoinj.uri.BitcoinURIParseException;
 import org.spongycastle.crypto.digests.SHA224Digest;
@@ -168,10 +167,10 @@ public class WalletNameResolver {
 
         try {
             this.backupDnsServerIndex = 0;
-            return new BitcoinURI(new MainNetParams(), resolved);
+            return new BitcoinURI(resolved);
         } catch (BitcoinURIParseException e) {
             try {
-                return new BitcoinURI(new MainNetParams(), "bitcoin:" + resolved);
+                return new BitcoinURI("bitcoin:" + resolved);
             } catch (BitcoinURIParseException e1) {
                 throw new WalletNameLookupException("BitcoinURI Creation Failed for " + resolved, e1);
             }
@@ -240,7 +239,7 @@ public class WalletNameResolver {
             }
 
             try {
-                return new BitcoinURI(new MainNetParams(), data);
+                return new BitcoinURI(data);
             } catch (BitcoinURIParseException e) {
                 throw new WalletNameLookupException("Unable to create BitcoinURI", e);
             }
