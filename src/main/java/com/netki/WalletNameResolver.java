@@ -4,8 +4,7 @@ import com.google.common.io.BaseEncoding;
 import com.netki.dns.DNSBootstrapService;
 import com.netki.dns.DNSUtil;
 import com.netki.dnssec.DNSSECResolver;
-import com.netki.exceptions.DNSSECException;
-import com.netki.exceptions.WalletNameLookupException;
+import com.netki.exceptions.*;
 import com.netki.tlsa.CACertService;
 import com.netki.tlsa.CertChainValidator;
 import com.netki.tlsa.TLSAValidator;
@@ -78,7 +77,8 @@ public class WalletNameResolver {
         WalletNameResolver resolver = new WalletNameResolver(dnssecResolver, new TLSAValidator(dnssecResolver, caCertService, chainValidator));
         try {
             //BitcoinURI resolved = resolver.resolve("bip70.netki.xyz", "btc", false);
-            BitcoinURI resolved = resolver.resolve("wallet.justinnewton.me", "btc", false);
+            //BitcoinURI resolved = resolver.resolve("wallet.justinnewton.me", "btc", false);
+            BitcoinURI resolved = resolver.resolve("gimme@mattdavid.me", "tbtc", true);
             System.out.println(String.format("WalletNameResolver: %s", resolved));
         } catch (WalletNameLookupException e) {
             System.out.println("WalletNameResolverException Caught!");
@@ -111,7 +111,7 @@ public class WalletNameResolver {
         try {
             availableCurrencies = this.resolver.resolve(String.format("_wallet.%s", DNSUtil.ensureDot(this.preprocessWalletName(label))), Type.TXT);
             if (availableCurrencies == null || availableCurrencies.equals("")) {
-                throw new WalletNameLookupException("No Wallet Name Currency List Present");
+                throw new WalletNameDoesNotExistException("No Wallet Name Currency List Present");
             }
         } catch (DNSSECException e) {
             if (this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
@@ -148,7 +148,7 @@ public class WalletNameResolver {
         try {
             resolved = this.resolver.resolve(String.format("_%s._wallet.%s", currency, DNSUtil.ensureDot(this.preprocessWalletName(label))), Type.TXT);
             if (resolved == null || resolved.equals("")) {
-                throw new WalletNameLookupException("Currency Not Available in Wallet Name");
+                throw new WalletNameCurrencyUnavailableException("Currency Not Available in Wallet Name");
             }
         } catch (DNSSECException e) {
             if (this.backupDnsServerIndex >= this.resolver.getBackupDnsServers().size()) {
@@ -194,13 +194,13 @@ public class WalletNameResolver {
         if (verifyTLSA) {
             try {
                 if (!this.tlsaValidator.validateTLSA(url)) {
-                    throw new WalletNameLookupException("TLSA Validation Failed");
+                    throw new WalletNameTlsaValidationException("TLSA Validation Failed");
                 }
             } catch (ValidSelfSignedCertException ve) {
                 // TLSA Uses a Self-Signed Root Cert, We Need to Add to CACerts
                 possibleRootCert = ve.getRootCert();
             } catch (Exception e) {
-                throw new WalletNameLookupException("TLSA Validation Failed", e);
+                throw new WalletNameTlsaValidationException("TLSA Validation Failed", e);
             }
         }
 
@@ -222,7 +222,7 @@ public class WalletNameResolver {
 
                     conn.setSSLSocketFactory(ctx.getSocketFactory());
                 } catch (Exception e) {
-                    throw new WalletNameLookupException("Failed to Add TLSA Self Signed Certificate to HttpsURLConnection", e);
+                    throw new WalletNameTlsaValidationException("Failed to Add TLSA Self Signed Certificate to HttpsURLConnection", e);
                 }
 
             }
@@ -242,7 +242,7 @@ public class WalletNameResolver {
                 throw new WalletNameLookupException("Unable to create BitcoinURI", e);
             }
         } catch (IOException e) {
-            throw new WalletNameLookupException("WalletName URL Connection Failed", e);
+            throw new WalletNameURLFailedException("WalletName URL Connection Failed", e);
         } finally {
             if (conn != null && in != null) {
                 try {

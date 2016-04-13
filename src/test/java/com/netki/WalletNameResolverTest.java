@@ -2,6 +2,8 @@ package com.netki;
 
 import com.netki.dnssec.DNSSECResolver;
 import com.netki.exceptions.DNSSECException;
+import com.netki.exceptions.WalletNameCurrencyUnavailableException;
+import com.netki.exceptions.WalletNameDoesNotExistException;
 import com.netki.exceptions.WalletNameLookupException;
 import com.netki.tlsa.TLSAValidator;
 import org.bitcoinj.uri.BitcoinURI;
@@ -16,6 +18,7 @@ import org.xbill.DNS.Type;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Exchanger;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -85,6 +88,50 @@ public class WalletNameResolverTest {
     }
 
     @Test
+    public void getAvailableCurrencies_EmptyResult() {
+        try {
+            when(this.mockResolver.resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT))).thenReturn("");
+        } catch (Exception e) {
+            fail("Failure to Setup Test: " + e.getMessage());
+        }
+
+        try {
+            this.testObj.getAvailableCurrencies("wallet.domain.com");
+            fail("Expected Exception");
+        } catch (WalletNameDoesNotExistException e) {
+            try {
+                verify(this.mockResolver, times(1)).resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT));
+            } catch (Exception e1) {
+
+            }
+        } catch (Exception e) {
+            fail("Unknown Test Failure: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void getAvailableCurrencies_NullResult() {
+        try {
+            when(this.mockResolver.resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT))).thenReturn(null);
+        } catch (Exception e) {
+            fail("Failure to Setup Test: " + e.getMessage());
+        }
+
+        try {
+            this.testObj.getAvailableCurrencies("wallet.domain.com");
+            fail("Expected Exception");
+        } catch (WalletNameDoesNotExistException e) {
+            try {
+                verify(this.mockResolver, times(1)).resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT));
+            } catch (Exception e1) {
+
+            }
+        } catch (Exception e) {
+            fail("Unknown Test Failure: " + e.getMessage());
+        }
+    }
+
+    @Test
     public void getAvailableCurrencies_NonRetryableException() {
         try {
             when(this.mockResolver.resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT))).thenThrow(new DNSSECException("message"));
@@ -95,7 +142,7 @@ public class WalletNameResolverTest {
         try {
             this.testObj.getAvailableCurrencies("wallet.domain.com");
             fail("Expected Exception");
-        } catch (Exception e) {
+        } catch (WalletNameLookupException e) {
             try {
                 verify(this.mockResolver, times(3)).resolve(eq("_wallet.wallet.domain.com."), eq(Type.TXT));
                 assertEquals("message", e.getMessage());
@@ -202,7 +249,7 @@ public class WalletNameResolverTest {
         try {
             this.testObj.resolve("wallet.domain.com", "dgc", true);
             fail("This should throw an exception");
-        } catch (WalletNameLookupException e) {
+        } catch (WalletNameCurrencyUnavailableException e) {
             try {
                 assertEquals("Currency Not Available in Wallet Name", e.getMessage());
                 verify(this.mockResolver, times(1)).resolve(anyString(), eq(Type.TXT));
@@ -227,7 +274,7 @@ public class WalletNameResolverTest {
         try {
             this.testObj.resolve("wallet.domain.com", "btc", true);
             fail("This should throw an exception");
-        } catch (WalletNameLookupException e) {
+        } catch (WalletNameCurrencyUnavailableException e) {
             try {
                 assertEquals("Currency Not Available in Wallet Name", e.getMessage());
                 verify(this.mockResolver, times(1)).resolve(anyString(), eq(Type.TXT));
