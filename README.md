@@ -17,13 +17,13 @@ This library can be included directly from Maven Central / OSS Sonatype.
 ##### Maven
 
     <dependency>
-        <groupId>com.netki</groupId>
-        <artifactId>wallet-name-resolver</artifactId>
+        <groupId>com.knolza</groupId>
+        <artifactId>gamblr-wallet-name-resolver</artifactId>
     </dependency>
     
 ##### Gradle
 
-    'com.netki:wallet-name-resolver:0.0.2+'
+    'com.knolza:gamblr-wallet-name-resolver:0.0.2+'
 
 ### Example
 
