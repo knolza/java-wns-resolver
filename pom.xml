@@ -108,9 +108,9 @@
             <version>1.1.1</version>
         </dependency>
         <dependency>
-            <groupId>org.bitcoinj</groupId>
-            <artifactId>bitcoinj-core</artifactId>
-            <version>0.13.5</version>
+            <groupId>org.dashj</groupId>
+            <artifactId>dashj-core</artifactId>
+            <version>0.14.3</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
