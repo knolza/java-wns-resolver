@@ -10,6 +10,12 @@ built-in support for optional [TLSA Record](https://tools.ietf.org/html/rfc6698)
 This library relies on the [dnssecjava](https://github.com/ibauersachs/dnssecjava) project for DNSSEC validation of
 the Wallet Name resolution as well as [TLSA Record](https://tools.ietf.org/html/rfc6698) resolution.
 
+### Build Library
+
+```
+$ mvn clean install -DskipTests
+```
+
 ### Library Inclusion
 
 This library can be included directly from Maven Central / OSS Sonatype.
